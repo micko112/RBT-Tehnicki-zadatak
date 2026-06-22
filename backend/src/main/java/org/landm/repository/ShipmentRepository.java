@@ -8,10 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ShipmentRepository extends JpaRepository<Shipment, Long>{
+public interface ShipmentRepository extends JpaRepository<Shipment, Long>,
+                                            JpaSpecificationExecutor<Shipment>{
 
-        Shipment findByTrackingNumber(String trackingNumber);
+        Optional<Shipment> findByTrackingNumber(String trackingNumber);
 
         boolean existsByTrackingNumber(String trackingNumber);
     }
+
 

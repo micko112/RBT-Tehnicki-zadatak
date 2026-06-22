@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     public UserDto register(RegisterUserRequestDto request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email već postoji");
+            throw new RuntimeException("Email vec postoji");
         }
 
         User user = User.builder()
