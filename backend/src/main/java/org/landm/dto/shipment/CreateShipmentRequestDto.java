@@ -38,4 +38,6 @@ public class CreateShipmentRequestDto {
 
     @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal weight;
+
+
 }
