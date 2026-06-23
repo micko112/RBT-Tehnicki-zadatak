@@ -3,15 +3,14 @@ package org.landm.specification;
 import jakarta.persistence.criteria.Predicate;
 import org.landm.entity.Shipment;
 import org.landm.entity.enums.ShipmentStatus;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class specification {
+public class Specification {
 
-    public static Specification<Shipment> filter(Long userId, ShipmentStatus status, LocalDateTime dateFrom, LocalDateTime dateTo){
+    public static org.springframework.data.jpa.domain.Specification<Shipment> filter(Long userId, ShipmentStatus status, LocalDateTime dateFrom, LocalDateTime dateTo){
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
