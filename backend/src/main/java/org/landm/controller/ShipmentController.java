@@ -1,10 +1,12 @@
 package org.landm.controller;
 
 import jakarta.validation.Valid;
+import org.landm.dto.imports.ImportResultDto;
 import org.landm.dto.shipment.CreateShipmentRequestDto;
 import org.landm.dto.shipment.ShipmentDto;
 import org.landm.dto.shipment.ShipmentStatusHistoryDto;
 import org.landm.dto.shipment.UpdateShipmentStatusRequestDto;
+import org.landm.service.ShipmentImportService;
 import org.landm.service.ShipmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,9 +22,11 @@ import java.util.List;
 @RequestMapping("api/shipments")
 public class ShipmentController {
     private final ShipmentService shipmentService;
+    private final ShipmentImportService shipmentImportService;
 
-    public ShipmentController(ShipmentService shipmentService) {
+    public ShipmentController(ShipmentService shipmentService, ShipmentImportService shipmentImportService) {
         this.shipmentService = shipmentService;
+        this.shipmentImportService = shipmentImportService;
     }
 
     @GetMapping("/{id}")
@@ -65,5 +70,13 @@ public class ShipmentController {
         List<ShipmentStatusHistoryDto> history = shipmentService.getHistoryForShipment(id);
 
         return ResponseEntity.ok(history);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ImportResultDto> importShipments(@RequestParam("file") MultipartFile file) {
+
+        ImportResultDto result = shipmentImportService.importShipments(file);
+
+        return ResponseEntity.ok(result);
     }
 }

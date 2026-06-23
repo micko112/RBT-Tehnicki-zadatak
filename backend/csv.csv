@@ -1,0 +1,5 @@
+userId,description,senderAddress,receiverAddress,receiverName,weight
+  1,Knjige za skolu,"Knez Mihailova 5, Beograd","Bulevar Kralja Aleksandra 73, Beograd",Petar Petrovic,2.5
+  1,Laptop,"Cara Lazara 10, Novi Sad","Vojvode Stepe 50, Beograd",Marko Markovic,3.8
+  999,Test sa losim user-om,Adresa A,Adresa B,Janko Jankovic,1.2
+  1,Loseg formata,Adresa,Adresa,Ime,abc
