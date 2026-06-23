@@ -5,6 +5,7 @@ import org.landm.dto.imports.ImportRowDto;
 import org.landm.dto.shipment.CreateShipmentRequestDto;
 import org.landm.mapper.ImportMapper;
 import org.landm.parser.CsvShipmentParser;
+import org.landm.parser.ExcelShipmentParser;
 import org.landm.service.ShipmentImportService;
 import org.landm.service.ShipmentService;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,15 @@ import java.util.List;
 @Service
 public class ShipmentImportServiceImpl implements ShipmentImportService {
     private final CsvShipmentParser csvParser;
+    private final ExcelShipmentParser excelParser;
     private final ShipmentService shipmentService;
     private final ImportMapper importMapper;
 
     public ShipmentImportServiceImpl(CsvShipmentParser csvParser,
-                                     ShipmentService shipmentService, ImportMapper importMapper) {
+                                     ShipmentService shipmentService, ImportMapper importMapper,
+                                     ExcelShipmentParser excelParser) {
         this.csvParser = csvParser;
+        this.excelParser = excelParser;
         this.shipmentService = shipmentService;
         this.importMapper = importMapper;
     }
@@ -35,7 +39,7 @@ public class ShipmentImportServiceImpl implements ShipmentImportService {
 
         List<String[]> rawRows;
         try {
-            rawRows = csvParser.parse(file.getInputStream());
+            rawRows = parseByExtension(file);
         } catch (IOException e) {
             throw new RuntimeException("Ne mogu da procitam fajl: " + e.getMessage());
         }
@@ -83,5 +87,25 @@ public class ShipmentImportServiceImpl implements ShipmentImportService {
         request.setWeight(dto.getWeight());
 
         return request;
+    }
+    private List<String[]> parseByExtension(MultipartFile file) throws IOException {
+
+        String filename = file.getOriginalFilename();
+
+        if (filename == null) {
+            throw new RuntimeException("Fajl nema ime");
+        }
+
+        String lower = filename.toLowerCase();
+
+        if (lower.endsWith(".csv")) {
+            return csvParser.parse(file.getInputStream());
+        }
+
+        if (lower.endsWith(".xlsx")) {
+            return excelParser.parse(file.getInputStream());
+        }
+
+        throw new RuntimeException("Nepodrzan format fajla: " + filename + " (dozvoljeno: .csv, .xlsx)");
     }
 }
