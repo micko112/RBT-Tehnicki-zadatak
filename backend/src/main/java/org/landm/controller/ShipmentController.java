@@ -1,5 +1,7 @@
 package org.landm.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.landm.dto.imports.ImportResultDto;
 import org.landm.dto.shipment.CreateShipmentRequestDto;
@@ -20,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/shipments")
+@Tag(name = "Shipments", description = "Endpointi za rad sa posiljkama")
 public class ShipmentController {
     private final ShipmentService shipmentService;
     private final ShipmentImportService shipmentImportService;
@@ -56,6 +59,8 @@ public class ShipmentController {
         return ResponseEntity.ok(shipment);
     }
     @PatchMapping("/{id}/status")
+    @Operation(summary = "Menja status posiljke", description = "Validira tranziciju (CREATED → IN_TRANSIT →  " +
+            "DELIVERED/CANCELLED) i belezi u history.")
     public ResponseEntity<ShipmentDto> updateStatus(@PathVariable Long id,
                                                     @Valid @RequestBody UpdateShipmentStatusRequestDto request) {
 
@@ -73,6 +78,8 @@ public class ShipmentController {
     }
 
     @PostMapping("/import")
+    @Operation(summary = "Import posiljki iz CSV ili XLSX fajla",
+            description = "Multipart upload. Greske se skupljaju po redu, ne prekidaju import.")
     public ResponseEntity<ImportResultDto> importShipments(@RequestParam("file") MultipartFile file) {
 
         ImportResultDto result = shipmentImportService.importShipments(file);
