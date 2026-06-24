@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Specification {
+public class ShipmentSpecification {
 
     public static org.springframework.data.jpa.domain.Specification<Shipment> filter(Long userId, ShipmentStatus status, LocalDateTime dateFrom, LocalDateTime dateTo){
         return (root, query, criteriaBuilder) -> {

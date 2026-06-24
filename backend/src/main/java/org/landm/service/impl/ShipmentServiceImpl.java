@@ -16,8 +16,12 @@ import org.landm.repository.ShipmentRepository;
 import org.landm.repository.ShipmentStatusHistoryRepository;
 import org.landm.repository.UserRepository;
 import org.landm.service.ShipmentService;
+import org.landm.specification.ShipmentSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +32,7 @@ public class ShipmentServiceImpl implements ShipmentService {
     private final ShipmentMapper shipmentMapper;
     private final ShipmentNumberGenerator shipmentNumberGenerator;
     private final ShipmentStatusHistoryRepository historyRepository;
-    private final ShipmentStatusHistoryMapper historyMapper;
+
     private final ShipmentStatusHistoryMapper shipmentStatusHistoryMapper;
 
     public ShipmentServiceImpl(ShipmentRepository shipmentRepository,
@@ -36,13 +40,13 @@ public class ShipmentServiceImpl implements ShipmentService {
                                ShipmentMapper shipmentMapper,
                                ShipmentNumberGenerator shipmentNumberGenerator,
                                ShipmentStatusHistoryRepository historyRepository,
-                               ShipmentStatusHistoryMapper historyMapper, ShipmentStatusHistoryMapper shipmentStatusHistoryMapper) {
+                               ShipmentStatusHistoryMapper shipmentStatusHistoryMapper) {
         this.shipmentRepository = shipmentRepository;
         this.userRepository = userRepository;
         this.shipmentMapper = shipmentMapper;
         this.shipmentNumberGenerator = shipmentNumberGenerator;
         this.historyRepository = historyRepository;
-        this.historyMapper = historyMapper;
+
         this.shipmentStatusHistoryMapper = shipmentStatusHistoryMapper;
     }
 
@@ -96,17 +100,21 @@ public class ShipmentServiceImpl implements ShipmentService {
         return shipmentMapper.toDto(shipment);
     }
 
+
     @Override
     @Transactional
-    public List<ShipmentDto> getAll() {
-        List<Shipment> shipments = shipmentRepository.findAll();
+    public Page<ShipmentDto> getAll(Long userId,
+                                    ShipmentStatus status,
+                                    LocalDateTime dateFrom,
+                                    LocalDateTime dateTo,
+                                    Pageable pageable) {
 
-        List<ShipmentDto> result = new ArrayList<>();
+        org.springframework.data.jpa.domain.Specification<Shipment> spec =
+                ShipmentSpecification.filter(userId, status, dateFrom, dateTo);
 
-        for (Shipment shipment : shipments) {
-            result.add(shipmentMapper.toDto(shipment));
-        }
-        return result;
+        Page<Shipment> page = shipmentRepository.findAll(spec, pageable);
+
+        return page.map(shipmentMapper::toDto);
     }
         @Override
         @Transactional
@@ -141,38 +149,30 @@ public class ShipmentServiceImpl implements ShipmentService {
 
         List<ShipmentStatusHistoryDto> result = new ArrayList<>();
         for (ShipmentStatusHistory entry : entries) {
-            result.add(historyMapper.toDto(entry));
+            result.add(shipmentStatusHistoryMapper.toDto(entry));
         }
-
         return result;
-
-
     }
 
     private void validateTransition(ShipmentStatus current, ShipmentStatus next) {
 
-            if (current == next) {
+        if (current == next) {
           throw new RuntimeException("Posiljka je vec u statusu: " + next);
       }
-
-      if (current == ShipmentStatus.DELIVERED || current == ShipmentStatus.CANCELLED) {
+        if (current == ShipmentStatus.DELIVERED || current == ShipmentStatus.CANCELLED) {
           throw new RuntimeException(
                   "Posiljka je u finalnom statusu (" + current + ") i ne moze se menjati"
           );
       }
-
-      if (current == ShipmentStatus.CREATED) {
+        if (current == ShipmentStatus.CREATED) {
           if (next != ShipmentStatus.IN_TRANSIT && next != ShipmentStatus.CANCELLED) {
               throw new RuntimeException("Iz CREATED je dozvoljen samo prelaz u IN_TRANSIT ili CANCELLED");
           }
-          return;
       }
-
-      if (current == ShipmentStatus.IN_TRANSIT) {
+        if (current == ShipmentStatus.IN_TRANSIT) {
           if (next != ShipmentStatus.DELIVERED && next != ShipmentStatus.CANCELLED) {
               throw new RuntimeException("Iz IN_TRANSIT je dozvoljen samo prelaz u DELIVERED ili CANCELLED");
           }
-          return;
       }
         }
 

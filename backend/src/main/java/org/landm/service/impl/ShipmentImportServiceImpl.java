@@ -36,23 +36,18 @@ public class ShipmentImportServiceImpl implements ShipmentImportService {
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("Fajl je prazan ili nije poslat");
         }
-
         List<String[]> rawRows;
         try {
             rawRows = parseByExtension(file);
         } catch (IOException e) {
             throw new RuntimeException("Ne mogu da procitam fajl: " + e.getMessage());
         }
-
         int successCount = 0;
         int failedCount = 0;
         List<ImportResultDto.RowError> errors = new ArrayList<>();
-
         for (int i = 0; i < rawRows.size(); i++) {
-
             int rowNumber = i + 2;
             String[] line = rawRows.get(i);
-
             try {
                 ImportRowDto dto = importMapper.mapToDto(rowNumber, line);
                 CreateShipmentRequestDto request = toCreateRequest(dto);
@@ -89,23 +84,17 @@ public class ShipmentImportServiceImpl implements ShipmentImportService {
         return request;
     }
     private List<String[]> parseByExtension(MultipartFile file) throws IOException {
-
         String filename = file.getOriginalFilename();
-
         if (filename == null) {
             throw new RuntimeException("Fajl nema ime");
         }
-
         String lower = filename.toLowerCase();
-
         if (lower.endsWith(".csv")) {
             return csvParser.parse(file.getInputStream());
         }
-
         if (lower.endsWith(".xlsx")) {
             return excelParser.parse(file.getInputStream());
         }
-
         throw new RuntimeException("Nepodrzan format fajla: " + filename + " (dozvoljeno: .csv, .xlsx)");
     }
 }
